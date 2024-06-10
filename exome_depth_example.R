@@ -28,7 +28,7 @@ bamFiles <- c("/path/to/WES/bam/proband.recal.bam",
               "/path/to/WES/bam/unrelated_panel_6.recal.bam",
               "/path/to/WES/bam/unrelated_panel_7.recal.bam",
               "/path/to/WES/bam/unrelated_panel_8recal.bam",
-              "/path/to/WES/bam/unrelated_panel_9.recal.bam"
+              "/path/to/WES/bam/unrelated_panel_9.recal.bam",
               "/path/to/WES/bam/unrelated_panel_10.recal.bam",)
 
 fasta <- c("/path/to/Homo_sapiens_assembly38.fasta")
