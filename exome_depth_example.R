@@ -141,7 +141,7 @@ annotated_cnv <- add_gene_name(cnv_analysis, bed)
 
 head(annotated_cnv)
 
-#write csv
+#write csv to output folder
 write.csv(annotated_cnv, "output/proband_exome_depth.csv")
 
 
