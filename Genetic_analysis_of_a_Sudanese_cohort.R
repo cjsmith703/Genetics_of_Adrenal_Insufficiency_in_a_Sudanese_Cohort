@@ -87,7 +87,7 @@ solved_assigner <- function(value) {
 data <- raw_data %>%
   mutate(gene1 = coalesce(mutation_diagnosis, mutation_diagnosis2)) %>% #mutation_diagnosis is post CGS, diagnosis2 is post WES
   mutate(gene = str_extract(gene1, "(MC2R|MRAP|STAR|NROB1|AIRE|CYP11A1|NNT|AAAS| 
-                                    |ABCD1|SGPL1|MCM4|TXNRD2|POMC|PPOX|CYP21A2|
+                                    |ABCD1|SGPL1|MCM4|TXNRD2|POMC|CYP21A2|
                                     |POR|GPX1|CYP11B1|HSD3B2|ARSA)")) %>%
   mutate(ethnicity1 = sapply(ethnicity, ethnicity_assigner)) %>% #apply cleaning functions
   mutate(consanguinity = sapply(consaguinity, consanguinity_assigner)) %>%
@@ -109,7 +109,7 @@ data$gender[data$gender___2 > 0] <- "Female"
 patient_data <- raw_data %>%
   mutate(gene1 = coalesce(mutation_diagnosis, mutation_diagnosis2)) %>% #mutation_diagnosis is post CGS, diagnosis2 is post WES
   mutate(gene = str_extract(gene1, "(MC2R|MRAP|STAR|NROB1|AIRE|CYP11A1|NNT|AAAS|
-                                    |ABCD1|SGPL1|MCM4|TXNRD2|POMC|PPOX|CYP21A2|
+                                    |ABCD1|SGPL1|MCM4|TXNRD2|POMC|CYP21A2|
                                     |POR|GPX1|CYP11B1|HSD3B2|ARSA)")) %>%
   mutate(ethnicity1 = sapply(ethnicity, ethnicity_assigner)) %>% #apply cleaning functions
   mutate(consanguinity = sapply(consaguinity, consanguinity_assigner)) %>%
@@ -142,7 +142,7 @@ names(colours) <- c("AAAS", "ABCD1", "AIRE",
                     "CYP21A2", "GPX1", "HSD3B2",
                     "MC2R", "MRAP", "NNT",
                     "NROB1", "POMC", "POR",
-                    "PPOX", "SGPL1", "STAR",
+                    "SGPL1", "STAR",
                     "TXNRD2")
 
 #assign disease categories
