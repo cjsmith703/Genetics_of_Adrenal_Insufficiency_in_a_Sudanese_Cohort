@@ -117,7 +117,7 @@ bed <- read.csv("hg38.csv")
 bed <- bed %>%
   mutate(chrom = gsub('chr', '', chrom))
 
-#add gene name for build 38 to cnv analysis 
+#function to add gene name for build 38 to cnv analysis 
 
 add_gene_name <- function(data, bed) {
   gene_names <- character(nrow(data))  
@@ -137,6 +137,7 @@ add_gene_name <- function(data, bed) {
   return(data)
 }
 
+#run function on cnv analysis
 annotated_cnv <- add_gene_name(cnv_analysis, bed)
 
 head(annotated_cnv)
