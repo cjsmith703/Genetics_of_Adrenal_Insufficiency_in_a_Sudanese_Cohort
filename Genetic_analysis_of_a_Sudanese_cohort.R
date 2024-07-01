@@ -146,7 +146,7 @@ names(colours) <- c("AAAS", "ABCD1", "AIRE",
                     "TXNRD2")
 
 #assign disease categories
-#patient numbers for sharing purposes
+#patient numbers removed for sharing purposes
 
 autoimmune_patient_list <- c()
 other_patient_list <- c()
@@ -162,11 +162,11 @@ unlist()
 #function to add disease categorisation
 patient_assigner <- function(value) {
   if (value %in% autoimmune_patient_list) {
-    return("Autoimmune")
+    return("A-AI") #Autoimmune-Adrenal Insufficiency
     } else if (value %in% other_patient_list) {
     return("Other")
     } else if (value %in% pai_patients) {
-    return("PAI")
+    return("NA-AI") #Non-autoimmune Adrenal Insufficiency
     } else {
       return("Unknown")
     }
@@ -382,8 +382,10 @@ ggplot(age, aes(gene, age_years, fill = gene)) +
 solved_colours <- c("#e2c4c0", "#a7c5ec")
 names(solved_colours) <- c("Unsolved", "Solved")
 
-disease_colours <- c("#297992", "#70d1c1", "#623175")
-names(disease_colours) <- c("PAI", "Autoimmune", "Transient")
+disease_colours <- c("#297992", "#70d1c1")
+names(disease_colours) <- c("NA-AI", "A-AI")
+
+my_comparisons <- list( c("NA-AI", "A-AI"))
 
 #Analyse solved rates between disease categories
 solved_2 <- family_data %>%
@@ -391,8 +393,7 @@ mutate(solved = ifelse(mutation_solved |
                       mutation_solved2 == 1,
                       "Solved", "Unsolved")) %>%
 select(study_id, disease, solved, gene, gene1) %>%
-arrange(solved, gene) %>%
-filter(disease != "Unknown")
+arrange(solved, gene)
 
 solved_disease <- solved_2 %>%
 count(solved, disease)
@@ -403,9 +404,8 @@ solved_disease$solved <- factor(solved_disease$solved,
                                 ordered = TRUE)
 
 solved_disease$disease <- factor(solved_disease$disease,
-                                 levels = c("PAI", "Autoimmune",
-                                            "Transient"),
-                                            ordered = TRUE)
+                                 levels = c("NA-AI", "A-AI"),
+                                 ordered = TRUE)
 
 #Bar chart of solved categories
 ggplot(solved_disease, aes(x = disease, y = n, fill = solved)) +
@@ -424,20 +424,10 @@ ggplot(solved_disease, aes(x = disease, y = n, fill = solved)) +
 cortisolug <- patient_data %>% 
   select(record_id, gene, disease, cortisol_level2, study_id) %>%
   drop_na(cortisol_level2)%>%
-  arrange(desc(cortisol_level2)) %>%
-  filter(disease != "Unknown")
+  arrange(desc(cortisol_level2)) 
 
 cortisolug$disease <- factor(cortisolug$disease, #set disease categories as factors
-                                 levels = c('NA-AI', 'A-AI', 'Transient', 'Unknown'), ordered=TRUE)
-
-
-cortisol_ug_anova <- aov(cortisol_level2 ~ disease, data = cortisolug) #perform one-way ANOVA
-summary(cortisol_ug_anova)
-
-tukey_cortisol_ug_anova <- TukeyHSD(cortisol_ug_anova) #perform post-hoc Tukey HSD
-tukey_cortisol_ug_anova
-
-cortisolug$cortisol_level2 <- as.numeric(cortisolug$cortisol_level2)
+                                 levels = c('NA-AI', 'A-AI'), ordered=TRUE)
 
 ggplot(cortisolug, aes(disease, y = cortisol_level2, fill = disease)) + #plot boxplot with anova analysis
   scale_fill_manual(values = disease_colours)+
@@ -455,21 +445,19 @@ ggplot(cortisolug, aes(disease, y = cortisol_level2, fill = disease)) + #plot bo
         axis.title=element_text(size=15, face = 'bold'),
         plot.title = element_text(hjust = 0.5, size=15, face = 'bold'), 
         legend.position="none")+
-  stat_compare_means(comparisons = my_comparisons, label.y= c(13, 15, 17))+
-  stat_compare_means(method = "anova")
+  stat_compare_means(comparisons = my_comparisons)+
+  stat_compare_means(method = "t.test")
+
+#t test for na-ai vs a-ai
+t.test(cortisol_level2 ~ disease, data = cortisolug)
 
 #age of onset between categories
 age$disease <- factor(age$disease, 
                       levels = c("PAI", "Autoimmune", "Transient", "Unknown"),
                       ordered = TRUE)
 
-#perform anova on age of onset between disease groups
-age_anova <- aov(age_years ~ disease, data = age)
-summary(age_anova)
-
-#perform tukey post hoc test
-tukey_age_anova <- TukeyHSD(age_anova)
-tukey_age_anova
+#t test for na-ai vs a-ai
+t.test(age_years ~ disease, data = age)
 
 #plot age of onset with all data points and statistical comparisons
 ggplot(age, aes(disease, age_years, fill = disease)) +
