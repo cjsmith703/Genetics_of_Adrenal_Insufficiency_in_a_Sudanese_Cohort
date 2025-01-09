@@ -1,12 +1,16 @@
+//GATK Nextflow pipeline for multiple samples
+//Dr Chris J Smith 
+//09/01/2025
+
 /*
  * Pipeline parameters
  */
 
 // Execution environment setup
-params.scratchDir = "/data/scratch/hmy407/nextflow"
-params.gatkDir = "/data/PublicDataSets/GATKbundle/hg38/v0"
-params.outdir_bam = "/data/scratch/hmy407/nextflow/output/bam"
-params.outdir_vcf = "/data/scratch/hmy407/nextflow/output/vcf"
+params.scratchDir = "/path/to/working/directory"
+params.gatkDir = "/path/to/PublicDataSets/GATKbundle/hg38/v0"
+params.outdir_bam = "/path/to/working/directory/output/bam"
+params.outdir_vcf = "/path/to/working/directory/output/vcf"
 
 // Primary input for FASTQ files
 params.inputDir = "${params.scratchDir}/input"
@@ -17,6 +21,8 @@ params.ref = "${params.gatkDir}/Homo_sapiens_assembly38.fasta"
 params.snp = "${params.gatkDir}/Homo_sapiens_assembly38.dbsnp138.vcf"
 params.indel = "${params.gatkDir}/Homo_sapiens_assembly38.known_indels.vcf.gz"
 params.indel2 = "${params.gatkDir}/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
+
+// Processes
 
 /*
  * Generate BAM file from FASTQ files
@@ -66,8 +72,9 @@ process MarkIlluminaAdapters {
     //input as tuple to keep sample name
     input:
         tuple val(sampleName), 
-              path(input_bam)
-
+              path(unaligned_bam)
+    
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.added.markilluminaadapters.bam"), emit: bam
@@ -75,7 +82,7 @@ process MarkIlluminaAdapters {
     script:
     """
     gatk MarkIlluminaAdapters \
-        -I ${input_bam} \
+        -I ${unaligned_bam} \
         -O ${sampleName}.added.markilluminaadapters.bam \
         -M ${sampleName}.markilluminaadapters.metrics.txt
     """
@@ -90,8 +97,9 @@ process SamtoFastq {
     //input as tuple to keep sample name
     input:
         tuple val(sampleName), 
-              path(input_bam)
+              path(adapters_bam)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.fq")
@@ -100,7 +108,7 @@ process SamtoFastq {
     script:
     """
     gatk SamToFastq \
-        -I ${input_bam} \
+        -I ${adapters_bam} \
         -F ${sampleName}.fq \
         --CLIPPING_ATTRIBUTE XT \
         --CLIPPING_ACTION 2 \
@@ -113,6 +121,7 @@ process SamtoFastq {
  * Align to reference genome
  */
 process bwa_mem {
+    //Loads BWA before running the script
     beforeScript "module load bwa"
     
     //input as tuple to keep sample name
@@ -120,6 +129,7 @@ process bwa_mem {
         tuple val(sampleName), 
               path(input_fq)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.sam")
@@ -143,6 +153,7 @@ process MergeBamAlignment {
               path(unaligned_bam), 
               path(aligned_bam)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.mergebamalignment.bam"), emit: bam
@@ -175,6 +186,7 @@ process MarkDuplicates {
         tuple val(sampleName),
               path(mergebamalignment_bam)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.markduplicates.bam"), emit: bam
@@ -199,6 +211,7 @@ process BaseRecalibrator {
         tuple val(sampleName),
               path(markduplicates_bam)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.markduplicates.table")
@@ -227,6 +240,7 @@ process ApplyBQSR {
               path(markduplicates_bam),
               path(markduplicates_table)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.recal.bam"), 
@@ -257,6 +271,7 @@ process HaplotypeCaller {
               path(recal_bam),
               path(recal_bai)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.raw.vcf")
@@ -283,6 +298,7 @@ process SNPSelection {
         tuple val(sampleName),
               path(raw_vcf)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.snps.vcf")
@@ -308,6 +324,7 @@ process SNPFiltering {
         tuple val(sampleName),
               path(snps_vcf)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.filtered.snps.vcf")
@@ -334,6 +351,7 @@ process IndelSelection {
         tuple val(sampleName),
               path(raw_vcf)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.indels.vcf")
@@ -359,6 +377,7 @@ process IndelFiltering {
         tuple val(sampleName),
               path(indel_vcf)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.filtered.indels.vcf")
@@ -385,6 +404,7 @@ process VCFProcessing {
               path(snp_filtered_vcf),
               path(indel_filtered_vcf)
 
+    // Define the output as tuple to keep sample name
     output:
         tuple val(sampleName),
               path("${sampleName}.filtered.merged.vcf.gz")
@@ -415,19 +435,19 @@ process VCFProcessing {
 
 workflow {
 
-    // Create channel from input files
+    // Create channel from input fastq files
 Channel
     .fromFilePairs("${params.inputDir}/*_{1,2}.fastq.gz")
     .map { filename, files -> 
-        def sampleName = filename[0..5]  // Extract first 6 chars
+        def sampleName = filename[0..5]  // Extract first 6 chars/change as needed
         tuple(
             files[0],                    // fastq1
             files[1],                    // fastq2
             sampleName,                  
             "READGROUPID",          
             "ILLUMINA",                  // platform
-            "PLATFORM_UNIT",        // platformUnit
-            "LIBRARY"          // library
+            "PLATFORM_UNIT",       
+            "LIBRARY"          
         )
     }
     .set { fastq_ch }
@@ -445,7 +465,7 @@ Channel
     bwa_mem(SamtoFastq.out)
 
     //Run GATK MergeBamAlignment
-    MergeBamAlignment(FastqToSam.out.join(bwa_mem.out))
+    MergeBamAlignment(FastqToSam.out.join(bwa_mem.out)) //Join the outputs to input unaligned and aligned bams
 
     //Run GATK MarkDuplicates
     MarkDuplicates(MergeBamAlignment.out)
@@ -454,7 +474,7 @@ Channel
     BaseRecalibrator(MarkDuplicates.out)
 
     //Run GATK ApplyBQSR
-    ApplyBQSR(MarkDuplicates.out.join(BaseRecalibrator.out))
+    ApplyBQSR(MarkDuplicates.out.join(BaseRecalibrator.out)) //Join the outputs to input bam and table
 
     //Run GATK HaplotypeCaller
     HaplotypeCaller(ApplyBQSR.out)
@@ -472,7 +492,7 @@ Channel
     IndelFiltering(IndelSelection.out)
 
     //Run GATK VCFProcessing
-    VCFProcessing(SNPFiltering.out.join(IndelFiltering.out))
+    VCFProcessing(SNPFiltering.out.join(IndelFiltering.out)) //Join the outputs to input snp and indel vcf files
 
 }
 
