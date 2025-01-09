@@ -477,4 +477,5 @@ ggplot(age, aes(disease, age_years, fill = disease)) +
         plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),
         legend.position = "none") +
   stat_compare_means(comparisons = my_comparisons) +
-  stat_compare_means(label.y = 50)
+  stat_compare_means(label.y = 20)+
+  stat_compare_means(method = "t.test")
