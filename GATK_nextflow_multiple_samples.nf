@@ -22,6 +22,23 @@ params.snp = "${params.gatkDir}/Homo_sapiens_assembly38.dbsnp138.vcf"
 params.indel = "${params.gatkDir}/Homo_sapiens_assembly38.known_indels.vcf.gz"
 params.indel2 = "${params.gatkDir}/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
 
+// Create channel from input fastq files
+Channel
+    .fromFilePairs("${params.inputDir}/*_{1,2}.fastq.gz")
+    .map { filename, files -> 
+        def sampleName = filename[0..5]  // Extract first 6 chars/change as needed
+        tuple(
+            files[0],                    // fastq1
+            files[1],                    // fastq2
+            sampleName,                  
+            "READGROUPID",              //Enter RG information here
+            "ILLUMINA",                  
+            "PLATFORM_UNIT",       
+            "LIBRARY"          
+        )
+    }
+    .set { fastq_ch }
+
 // Processes
 
 /*
@@ -435,23 +452,6 @@ process VCFProcessing {
 
 workflow {
 
-    // Create channel from input fastq files
-Channel
-    .fromFilePairs("${params.inputDir}/*_{1,2}.fastq.gz")
-    .map { filename, files -> 
-        def sampleName = filename[0..5]  // Extract first 6 chars/change as needed
-        tuple(
-            files[0],                    // fastq1
-            files[1],                    // fastq2
-            sampleName,                  
-            "READGROUPID",          
-            "ILLUMINA",                  // platform
-            "PLATFORM_UNIT",       
-            "LIBRARY"          
-        )
-    }
-    .set { fastq_ch }
-   
     // Map the tuple to the individual parameters for FastqToSam
     FastqToSam(fastq_ch)
 
