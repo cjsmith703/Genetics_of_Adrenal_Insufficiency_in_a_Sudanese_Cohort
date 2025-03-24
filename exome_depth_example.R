@@ -1,5 +1,6 @@
-#title "Exome_depth_example_with build38)"
+#title "Exome_depth_example_with hg38"
 #author: Chris J Smith
+#March 2025
 
 ####Install Dependencies##################################################
 #if (!require("BiocManager", quietly = TRUE))

@@ -1,6 +1,6 @@
 //GATK Nextflow pipeline for multiple samples
 //Dr Chris J Smith 
-//09/01/2025
+//March 2025
 
 /*
  * Pipeline parameters
