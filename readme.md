@@ -1,6 +1,6 @@
 # Novel Recurent Mutations and Genetic Diversity in Sudanese Children with Adrenal Insufficiency
 
-This repository contains the scripts used for variant calling in **WES samples using Nextflow**. The script allows for the running of multiple concurrent samples proving they are in the format of F001-1_1.fastq.gz.
+This repository contains the scripts used for variant calling in **WES samples using Nextflow**. The script allows for the running of multiple concurrent samples providing they are in the format of F001-1_1.fastq.gz.
 
 The repository also contains the script used for Copy Number Variation analysis using the R package **ExomeDepth**.
 
