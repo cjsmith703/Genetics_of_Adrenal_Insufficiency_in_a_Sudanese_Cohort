@@ -2,9 +2,9 @@
 
 This repository contains the scripts used for variant calling in **WES samples using Nextflow**. The script allows for the running of multiple concurrent samples providing they are in the format of F001-1_1.fastq.gz.
 
-The repository also contains the script used for Copy Number Variation analysis using the R package **ExomeDepth**.
+The repository also contains the script used for **Copy Number Variation** analysis using the R package **ExomeDepth**.
 
-Finally, it contains the scripts, in R and Python, to analyse the output of a REDCAP clinical database. 
+Finally, it contains the scripts, in **R** and **Python**, to analyse the output of a **REDCAP** clinical database. 
 
 All identifying information has been removed. 
 
