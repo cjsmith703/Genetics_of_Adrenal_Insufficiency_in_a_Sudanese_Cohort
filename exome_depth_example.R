@@ -147,7 +147,7 @@ head(annotated_cnv)
 write.csv(annotated_cnv, "output/proband_exome_depth.csv")
 
 
-#plot gene of interest in graph
+#plot gene of interest
 plot (all.exons,
       sequence = '1',
       xlim = c(44280000, 44400000),
